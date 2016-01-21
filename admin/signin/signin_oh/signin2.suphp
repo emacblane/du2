@@ -61,6 +61,10 @@
               
               }
 
+            function checkNumber(){
+                alert("My Nigga!!!")
+            }
+
 		</script> 
         
         <script>
@@ -276,7 +280,7 @@
                     <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
                     <input type="hidden" name="process" value="1" >
                     <p>
-                    <center><input type="submit" value="Submit" style="background-color:yellow; width:50%"></center>
+                    <center><input type="submit" value="Submit" style="background-color:yellow; width:50%" onclick="checkNumber()"></center>
                     </p>
                     
                     <?php endif ?>
