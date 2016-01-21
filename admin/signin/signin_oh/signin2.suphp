@@ -47,7 +47,6 @@
             var fs = require('fs');
             var path = require('path');
 
-            
             //Export Code-----------------------
     
             function post() {
@@ -60,26 +59,7 @@
               $.post('postpic.suphp',{postpic:pic},function(data){$('#image').html(data)});
               
               }
-/*
-            function checkNumber(){
-                var str = document.getElementById("dorm").value;
-                var myRe = /\d/;
-                var dillard = /Dillard|Gooch/
-                var dilNumbers = /[1-3][0-3][0-9]/;
-                if(myRe.test(str)){
-                    if(dillard.test(str)){
-                        if(!dilNumbers.test(str)){
-                            var newString = prompt("Please, please put in your suite number, not building number");
-                            document.getElementById("dorm").value = newString;
-                        }
-                    }
-                }
-                else{
-                    var newString = prompt("Please enter an address with a number");
-                    document.getElementById("dorm").value = newString;
-                }
-            }
-*/
+
 		</script> 
         
         <script>
@@ -88,8 +68,7 @@
             
             var img_url = document.getElementById('img_url').value;
             var skip = document.getElementById('skip').value;
-            var response = document.getElementById('response').value;
-    
+            
             //Check all fields if first time
             
              if( img_url == '' || img_url == null ){
@@ -99,12 +78,6 @@
                  }
             }
             
-            if( response.length > 450 ){
-                alert("Either you're writing an essay to answer our question or you're just holding down the \"a\" key.  Cool it, cut out about half of what you wrote, and try again.");
-                return false;
-            }
-
-
             var str = document.getElementById("dorm").value;
             var myRe = /\d/;
             var dillard = /Dillard|Gooch|dillard|gooch/
@@ -313,7 +286,7 @@
                     <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
                     <input type="hidden" name="process" value="1" >
                     <p>
-                    <center><input type="submit" value="Submit" style="background-color:yellow; width:50%" onclick="checkNumber()"></center>
+                    <center><input type="submit" value="Submit" style="background-color:yellow; width:50%"></center>
                     </p>
                     
                     <?php endif ?>
@@ -338,4 +311,4 @@
 			</div>
 		</div>
 	</body>
-</html>
+</html> 
