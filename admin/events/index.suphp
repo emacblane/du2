@@ -36,12 +36,15 @@
                     //UPDATE QUERY FOR EVENTS
                     if($_POST["process"]=="event"){
                     $event_occ = $_POST["choice"];
+                    $event_key = $_POST["event_key"];
+                    if($event_key=='40'){
+                        $event_occ = 'y';
+                    }
                     $event = $_POST["event"];
                     $date = $_POST["datepicker"];
                     $q_exist = $_POST["q"];
                     $q = $_POST["q-actual"];
                     $q_ref = $_POST["q-ref"];
-                    $event_key = $_POST["event_key"];
                     $datestamp = strtotime($date);
                     $update_query = 'UPDATE events SET event_key = '.mysql_real_escape_string($event_key).',exist = \''.mysql_real_escape_string($event_occ).'\',name = \''.mysql_real_escape_string($event).'\',date = \''.mysql_real_escape_string($date).'\',q_exist = \''.mysql_real_escape_string($q_exist).'\',question = \''.mysql_real_escape_string($q).'\',question_tag = \''.mysql_real_escape_string($q_ref).'\' WHERE event_key = '.mysql_real_escape_string($event_key);
                     $update_run = mysql_query($update_query);
