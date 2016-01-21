@@ -62,7 +62,22 @@
               }
 
             function checkNumber(){
-                alert("My Nigga!!!")
+                var str = document.getElementById("dorm").value;
+                var myRe = /\d/;
+                var dillard = /Dillard|Gooch/
+                var dilNumbers = /[1-3][0-3][0-9]/;
+                if(myRe.test(str)){
+                    if(dillard.test(str)){
+                        if(!dilNumbers.test(str)){
+                            var newString = prompt("Please, please put in your suite number, not building number");
+                            document.getElementById("dorm").value = newString;
+                        }
+                    }
+                }
+                else{
+                    var newString = prompt("Please enter an address with a number");
+                    document.getElementById("dorm").value = newString;
+                }
             }
 
 		</script> 
