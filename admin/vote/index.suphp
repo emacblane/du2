@@ -595,7 +595,7 @@
             <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
         </form>
         
-        <form action="#" method="post" id="downloads">
+        <form action="download.suphp" method="post" id="downloads">
             <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
             <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
             <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >

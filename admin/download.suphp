@@ -17,34 +17,19 @@
 		<link rel="stylesheet" href="../assets/css/styles.css">
 	</head>
     
-                    <?php $usr = $_POST["usr"]; $pwd = $_POST["pwd"]; $database=$_POST["dtb"]; $endpoint=$_POST["end"]; $process=$_POST["process"]; $computing=$_POST["computing"]; $textforrushee='';
+                    <?php $usr = $_POST["usr"]; $pwd = $_POST["pwd"]; $database=$_POST["dtb"]; $endpoint=$_POST["end"]; 
 		            
 					$link =
 						mysql_connect($endpoint,$usr,$pwd);
 					
 					// Check if RDS is connected. !$link means that $link is not null. If its null
 					//RDS is not connected, then !$link will be 1 to make the below condition true.
-                    
-                    //Select Database
-                    @mysql_select_db($database) or die( 'Error.  Contact rush chair or <a href="../index.html">try reloading</a> ');
-                    
+
 
                     if (!$link) { 
 			             echo '<p><b>Username or password invalid.</b></p>  <p><a href="../du2/index.html">Try again?</a></p>'; 
                     } 
-		              
-                    if($process == 1){
-                        $newrusheesql = 'INSERT INTO rushees (computing) VALUES (\''.mysql_real_escape_string($computing).'\')';
-                        $runupdate = mysql_query($newrusheesql);
-                        if (!$runupdate) {
-                            die('Error adding rushee: ' . mysql_error()); 
-                            $textforrushee = '<font color="red">Error adding rushee.</font>';
-                        }   
-                        else{
-                            $textforrushee = 'Rushee with computing ID '.$computing.' successfully added.';
-                        }
-                    }
-
+		
 					?>
     
 	<body>
@@ -70,18 +55,16 @@
 		<div class="content">
 			<div class="container">
 				<div class="main">
-					<h1>Add Rushee</h1>
+					<h1>Download to Excel</h1>
 					<hr>
-                    <center>
-                    <p><?php echo $textforrushee;?></p>
-                    <form action="addrushee.suphp" method="post">
+
+					<center>
+                    <form action="downloadactor.suphp" method="post">
                         <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
                         <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
                         <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
                         <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
-                        <input type="hidden" name="process" value="1">
-                        <p><input type="text" name="computing" placeholder="Computing ID" maxlength="6" required></p>
-                        <p><input type="submit" value="Add Rushee" style="background-color:lightgreen; width:20%"></p>
+                        <p><input type="submit" value="Download Spreadsheet" style="background-color:lightgreen; width:20%"></p>
                     </form>
                     </center>
     
@@ -125,7 +108,7 @@
             <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
         </form>
         
-        <form action="download.suphp" method="post" id="downloads">
+        <form action="#" method="post" id="downloads">
             <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
             <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
             <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
