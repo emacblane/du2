@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+        
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>Delta Upsilon Recruitment Management</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="Description" lang="en" content="Database for managing rushees and round invitations">
+		<meta name="author" content="Eric MacBlane, emm7pr@virginia.edu">
+		<meta name="robots" content="index, follow">
+        
+        
+        <script language="JavaScript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+		<script language="JavaScript" src="//ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"></script>
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+        <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+        <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+        
+        <script>
+          $(document).ready(function() {
+            $("#datepicker").datepicker();
+          });
+        </script>
+        
+        <script language="JavaScript">
+        var FormStuff = {
+  
+              init: function() {
+                this.applyConditionalRequired();
+                this.bindUIActions();
+              },
+
+              bindUIActions: function() {
+                $("input[type='radio'], input[type='checkbox']").on("change", this.applyConditionalRequired);
+              },
+
+              applyConditionalRequired: function() {
+
+                $(".require-if-active").each(function() {
+                  var el = $(this);
+                  if ($(el.data("require-pair")).is(":checked")) {
+                    el.prop("required", true);
+                  } else {
+                    el.prop("required", false);
+                  }
+                });
+
+              }
+
+            };
+
+            FormStuff.init();
+            
+        </script>
+        
+        <!-----------FORM VALIDATION------------------->
+        
+        <script>
+        function validateForm() {
+             
+            var event_occ = document.getElementById('choice').checked;
+            var event = document.getElementById('event').value;
+            var question_exist = document.getElementById('q').checked;
+            var date = document.getElementById('datepicker').value;
+            var question_act = document.getElementById('q-actual').value;
+            var question_ref = document.getElementById('q-ref').value;
+            var errors = '';
+            
+            if ( event_occ == true ) {
+                if( event == '' || event == null ){
+                    alert("Event Name must be filled out.");
+                    return false;
+                }
+                if(event.length > 150 ){
+                    alert("Event Name must be less than 150 characters.");
+                    return false;
+                }
+                if( date == '' || date == null ){
+                    alert("Event Date must be filled out");
+                    return false;
+                }
+                else{
+                    var lvalid = false;
+                    if( date.length == 10){
+                        lvalid = true;
+                    }
+                    var month = date.substr(0,2);
+                    var s1 = date.substr(2,1);
+                    var day = date.substr(3,2);
+                    var s2 = date.substr(5,1);
+                    var year = date.substr(6,4);
+                    var mvalid = false;
+                    var svalid = false;
+                    var dvalid = false;
+                    var yvalid = false;
+                    if( s1 == '/' && s2 == '/'){
+                        svalid = true;
+                    }
+                    if( 0 < month && month < 13 ){
+                        mvalid = true;
+                    }
+                    if( 0 < day && day < 32 ){
+                        dvalid = true;
+                    }
+                    if( 2014 < year && year < 3000){
+                        yvalid = true;
+                    }
+                    if( mvalid && svalid && yvalid && dvalid && lvalid){
+                    }
+                    else{
+                        alert("Date must be valid and in the form of MM/DD/YYYY");
+                        return false;
+                    }
+                }
+                if( question_exist == true){
+                    if( question_act == '' || question_act == null ){
+                    alert("Since you are asking a question, you must include that question in your entry.");
+                    return false;
+                    }
+                    if( question_act.length > 450 ){
+                    alert("Actual question must be no more than 450 characters.");
+                    return false;
+                    }
+                    if( question_ref == '' || question_ref == null ){
+                    alert("If you are asking a question, you must include a reference for that question.");
+                    return false;
+                    }
+                    if( question_ref.length > 25 ){
+                    alert("Reference for question must be no more than 25 characters.");
+                    return false;
+                    }
+                }
+            }
+        }
+            
+        
+        </script>
+        
+            
+		<!-- icons -->
+		<link rel="apple-touch-icon" href="../../assets/img/apple-touch-icon.png">
+		<link rel="shortcut icon" href="../../assets/img/dubadge.png">
+
+		<!-- Override CSS file - add your own CSS rules -->
+		<link rel="stylesheet" href="../../assets/css/styles.css">
+        <link rel="stylesheet" href="../../assets/css/hiding.css">
+        
+	</head>
+    
+                    <?php $usr = $_POST["usr"]; $pwd = $_POST["pwd"]; $database=$_POST["dtb"]; $endpoint=$_POST["end"]; 
+                    $event_key=$_POST["event"]; 
+		
+					$link =
+						mysql_connect($endpoint,$usr,$pwd);
+					
+					// Check if RDS is connected. !$link means that $link is not null. If its null
+					//RDS is not connected, then !$link will be 1 to make the below condition true.
+
+                    $proceed = true;
+                    if (!$link || $usr != 'admin' ) { 
+                        $proceed = false;
+			             echo '<p><b>Username or password invalid.</b></p>  <p><a href="../../index.html">Try again?</a></p>'; 
+                    }
+
+                    //Select Database
+                    @mysql_select_db($database) or die( 'Error.  Contact rush chair or <a href="../../index.html">try reloading</a> ');
+
+                    $presql = 'SELECT * FROM events WHERE event_key=\''.$event_key.'\'';
+                    $prerun = mysql_query($presql);
+                    if (!$prerun) {
+                        die('Error retrieving round information: ' . mysql_error()); 
+                    }
+                    $event = mysql_fetch_assoc($prerun);
+
+                    $disable = '';
+                    $fh = '';
+                    $check_event = '';
+
+                    $r = substr($event_key,0,1);
+                    $e = substr($event_key,1,1);
+                    if($r == 5){
+                        $r = 'Open House';
+                        $e = ', Day '.$e;
+                    }
+                    else if($r == 4){
+                        $r = 'Final Hours';
+                        $e = '';
+                        $disable = 'disabled';
+                        $fh = '- <font color="red"><i>This event is mandated by the interfraternity council.</i></font>';
+                    }
+                    else{
+                        $r = 'Round '.$r;
+                        $e = ', Event '.$e;
+                    }
+                    
+                    if($event['exist'] == 'y'){
+                        $check_event = 'checked';
+                    }
+                    
+                    if($event['q_exist'] == 'y'){
+                        $check_q = 'checked';
+                    }
+
+					?>
+    
+	<body>
+		<div class="header">
+			<div class="container">
+				<h1 class="header-heading">Delta Upsilon Recruitment Management</h1>
+                <h3><i>Manager Account</i></h3>
+			</div>
+		</div>
+		<div class="nav-bar">
+			<div class="container">
+				<ul class="nav">
+                    <li><a href="javascript:{}" onclick="document.getElementById('home').submit(); return false;">Home</a></li>
+					<li><a href="javascript:{}" onclick="document.getElementById('signin').submit(); return false;">Sign-In</a></li>
+					<li><a href="javascript:{}" onclick="document.getElementById('profile').submit(); return false;">Rushee Profiles</a></li>
+                    <li><a href="javascript:{}" onclick="document.getElementById('voting').submit(); return false;">Voting</a></li>
+                    <li><a href="javascript:{}" onclick="document.getElementById('downloads').submit(); return false;">Downloads</a></li>
+                    <li><a href="javascript:{}" onclick="document.getElementById('events').submit(); return false;">Events</a></li>
+				</ul>
+			</div>
+		</div>
+		<div class="content">
+			<div class="container">
+				<div class="main">
+                    <form name="event_udpdate" action="index.suphp" onsubmit="return validateForm()" method="post">
+					
+                    <h3><?php echo $r.$e; ?></h3>
+                        
+                       <form method="post" action="#">
+                           
+                      <h5>Are you having an event for <?php echo $r.$e; ?>?</h5>
+                      <div>
+                        <input type="checkbox" name="choice" id="choice" value="y" <?php echo $disable.' '.$check_event; ?>></input> Yes <?php echo $fh;?>
+
+                        <div class="reveal-if-active">
+                          <p>First, what's the event? <input type="textbox" name="event" value="<?php echo $event['name']; ?>" id="event" placeholder="i.e. Poker Night" style="width: 300px;"></p>
+                          <p>When's it going to be? <input type="textbox" name="datepicker" value="<?php echo $event['date']; ?>" id="datepicker" placeholder="MM/DD/YYYY"></p>
+                            <h5>Do you have a question to ask or information you'd like to gather at the door?</h5>
+                            <div>
+                            <input type="checkbox" name="q" id="q" value="y" <?php echo $check_q; ?>> Yes
+                            <div class="reveal-if-active">
+                                What question do you want to ask? <input type="textbox" name="q-actual" value="<?php echo $event['question']; ?>" id="q-actual" placeholder="i.e. What is your favorite alcohol?" size="70"> <br><Br>
+                                And in one word for reference? <input type="textbox" name="q-ref" value="<?php echo $event['question_tag']; ?>" id="q-ref" placeholder="i.e. Alcohol" size="10">
+                            
+                        </div>
+                      </div>
+
+                      </div>
+                      <div>
+                            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+                            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+                            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+                            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+                            <input type="hidden" name="process" value="event" >
+                            <input type="hidden" name="event_key" value="<?php echo $event_key ; ?>" >
+                        <p><center><input type="submit" value="Save" style="background-color:lightgreen; width:25%"></center></p>
+                    </div>
+                    </form>
+                        
+				</div>
+			</div>
+		</div>
+		<div class="footer">
+			<div class="container">
+				&copy; Copyright 2015
+			</div>
+		</div>
+        
+        
+        
+        
+        
+        <!--------------------- NAV FORMS ----------------------->
+        <form action="../index.suphp" method="post" id="home">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+        </form>
+        
+        <form action="../signin/index.suphp" method="post" id="signin">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+        </form>
+        
+        <form action="#" method="post" id="profile">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+        </form>
+        
+        <form action="../vote/index.suphp" method="post" id="voting">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+        </form>
+        
+        <form action="#" method="post" id="downloads">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+        </form>
+        
+        <form action="index.suphp" method="post" id="events">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+        </form>
+        
+        <!--------------------- END NAV FORMS ----------------------->
+        
+        
+	</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+        <?php $usr = $_POST["usr"]; $pwd = $_POST["pwd"]; $computing = $_POST["computing"]; $database=$_POST["dtb"]; $endpoint=$_POST["end"]; ?>
+        
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>Delta Upsilon Recruitment Management</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="Description" lang="en" content="Database for managing rushees and round invitations">
+		<meta name="author" content="Eric MacBlane, emm7pr@virginia.edu">
+		<meta name="robots" content="index, follow">
+
+		<!-- icons -->
+		<link rel="apple-touch-icon" href="../../../assets/img/apple-touch-icon.png">
+		<link rel="shortcut icon" href="../../../assets/img/dubadge.png">
+
+		<!-- Override CSS file - add your own CSS rules -->
+		<link rel="stylesheet" href="../../../assets/css/styles.css">
+	</head>
+    
+            <?php 
+                //DATA PROCESSING
+                $computing=strtolower($_POST["computing"]);
+                $response=$_POST["response"];
+                $rank=$_POST["rank"];
+                
+                $link =
+                    mysql_connect($endpoint,$usr,$pwd);
+
+                    if (!$link) { 
+			             echo '<p>Check account connectivity.</p>'; 
+                    } 
+
+                    //Select Database
+                    @mysql_select_db($database) or die( 'Error.  Contact rush chair or <a href="../../../index.html">try reloading</a> ');
+                    
+                    $current_invite_level = 3;
+
+                    $presql2 = 'SELECT * FROM events WHERE event_key=40';
+                    $prerun2 = mysql_query($presql2);
+                    if (!$prerun2) {
+                        die('Error retrieving query (2): ' . mysql_error()); 
+                    }
+                    $eventinfo = mysql_fetch_assoc($prerun2);
+
+                    if($eventinfo['q_exist']=='y'){
+                        $qres = $eventinfo['question'];
+                        $questiondiv = '<p>'.$qres.'<font color="red">*</font> <input type="text" name="response" id="response" value="'.$rushee[$q_cur].'" required></p>';
+                    }
+
+                    if($_POST["process"]==1){
+                        
+                        $presql0 = 'SELECT * FROM rushees WHERE computing=\''.$computing.'\'';
+                        $prerun0 = mysql_query($presql0);
+                        if (!$prerun0) {
+                            die('Error retrieving query (1): ' . mysql_error()); 
+                        }
+                        $rushee = mysql_fetch_assoc($prerun0);
+                        $rushee_col = 'i_3';
+                        
+                        if($rushee[$rushee_col] == 'y'){
+                            //UPDATE ATTENDANCE AND QUESTION FOR ALL
+                                $update_sql = 'UPDATE `rushees` SET `att_40`=\'y\' WHERE `computing`=\''.$computing.'\'';
+                                $runupdate = mysql_query($update_sql);
+                                if (!$runupdate) {
+                                    die('Error retrieving query (update): ' . mysql_error()); 
+                                }
+                        
+                                $q_update_sql = 'UPDATE `rushees` SET `q_40`=\''.mysql_real_escape_string($response).'\' WHERE `computing`=\''.$computing.'\'';
+                                $q_runupdate = mysql_query($q_update_sql);
+                                if (!$q_runupdate) {
+                                    die('Error retrieving query (update): ' . mysql_error()); 
+                                }
+                                
+                                if($rushee['alt_name_exist']=='y'){
+                                    $successdiv = '<p><i>Thanks, '.$rushee['alt_name'].'.</i></p><hr>';
+                                }
+                                else{
+                                    $successdiv = '<p><i>Thanks, '.$rushee['first_name'].'.</i></p><hr>';
+                                }
+                            
+                                //Rank
+                                $sql1 = 'UPDATE rushees SET fh_rank = '.$rank.' WHERE computing = \''.$computing.'\'';
+                                $run1 = mysql_query($sql1);
+                                if (!$run1) {
+                                    die('Error running 1: ' . mysql_error()); 
+                                }
+
+                                session_start();
+                                $time = date('g:i a');
+
+                                //Time
+                                $sql2 = 'UPDATE rushees SET fh_timestamp = \''.$time.'\' WHERE computing = \''.$computing.'\'';
+                                $run2 = mysql_query($sql2);
+                                if (!$run2) {
+                                    die('Error running 2: ' . mysql_error()); 
+                                }
+                        }
+                        
+                        else{
+                            $successdiv = '<p><font color="red"><i>Sorry, this user ('.$computing.') is not recorded in our system for this round.  Please see a rush chair to clear up this mistake, so we can make sure we don\'t mess up our voting!</i></font></p><hr>';   
+                        }
+                    
+                    }
+                 
+             ?>
+    
+	<body>
+		<div class="header">
+			<div class="container">
+				<h1 class="header-heading">Delta Upsilon Recruitment Management</h1>
+                <h3><i>Sign-In Account Active (Manager/Rush Chair)</i></h3>
+			</div>
+		</div>
+		<div class="nav-bar">
+			<div class="container">
+				<ul class="nav">
+					<li><font color="white"><?php echo $eventinfo['date']; ?></font></li>
+				</ul>
+			</div>
+		</div>
+		<div class="content">
+			<div class="container">
+				<div class="main">
+					<h2><?php echo $eventinfo['name'].' Sign In';?></h2>
+					<hr>
+                    <?php echo $successdiv; ?>
+                    <form action="signin.suphp" method="post">
+  					<p><b>Computing ID:</b><font color="red">*</font> <input type="text" name="computing" required> </p>
+                        <p><b>Intended Hour:</b><font color="red">*</font> <i>Select the <u>highest choice</u> hour you are attending for.  For example, if you are attending from 8pm-10pm, select 9:00pm-10:00pm (first choice).</i><br></p>
+                    <p><input type="radio" name="rank" value="3"> 7:00pm-8:00pm (Third Choice)<br></p>
+					<p><input type="radio" name="rank" value="2"> 8:00pm-9:00pm (Second Choice)<br></p>
+					<p><input type="radio" name="rank" value="1"> 9:00pm-10:00pm (First Choice)<br></p>
+                    <p><?php echo $questiondiv; ?></p>
+					<input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+					<input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+                    <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+                    <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+                    <input type="hidden" name="process" value="1" >
+                    <p><center><input type="submit" value="Submit" style="background-color:yellow; width:50%"></center></p>
+				    </form>
+    
+				</div>
+			</div>
+		</div>
+		<div class="footer">
+			<div class="container">
+				&copy; Copyright 2015
+			</div>
+		</div>
+	</body>
+</html>

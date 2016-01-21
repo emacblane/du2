@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>Delta Upsilon Recruitment Management</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="Description" lang="en" content="Database for managing rushees and round invitations">
+		<meta name="author" content="Eric MacBlane, emm7pr@virginia.edu">
+		<meta name="robots" content="index, follow">
+
+		<!-- icons -->
+		<link rel="apple-touch-icon" href="../../assets/img/apple-touch-icon.png">
+		<link rel="shortcut icon" href="../../assets/img/dubadge.png">
+
+		<!-- Override CSS file - add your own CSS rules -->
+		<link rel="stylesheet" href="../../assets/css/styles.css">
+	</head>
+    
+                    <?php $usr = $_POST["usr"]; $pwd = $_POST["pwd"]; $database=$_POST["dtb"]; $endpoint=$_POST["end"]; 
+		
+					$link =
+						mysql_connect($endpoint,$usr,$pwd);
+					
+					// Check if RDS is connected. !$link means that $link is not null. If its null
+					//RDS is not connected, then !$link will be 1 to make the below condition true.
+
+
+                    if (!$link) { 
+			             echo '<p><b>Username or password invalid.</b></p>  <p><a href="../../index.html">Try again?</a></p>'; 
+                    } 
+                    @mysql_select_db($database) or die( "Unable to select database");
+
+                    //UPDATE METHODS****************
+
+                    //UPDATE QUERY FOR EVENTS
+                    if($_POST["process"]=="event"){
+                    $event_occ = $_POST["choice"];
+                    $event = $_POST["event"];
+                    $date = $_POST["datepicker"];
+                    $q_exist = $_POST["q"];
+                    $q = $_POST["q-actual"];
+                    $q_ref = $_POST["q-ref"];
+                    $event_key = $_POST["event_key"];
+                    $datestamp = strtotime($date);
+                    $update_query = 'UPDATE events SET event_key = '.mysql_real_escape_string($event_key).',exist = \''.mysql_real_escape_string($event_occ).'\',name = \''.mysql_real_escape_string($event).'\',date = \''.mysql_real_escape_string($date).'\',q_exist = \''.mysql_real_escape_string($q_exist).'\',question = \''.mysql_real_escape_string($q).'\',question_tag = \''.mysql_real_escape_string($q_ref).'\' WHERE event_key = '.mysql_real_escape_string($event_key);
+                    $update_run = mysql_query($update_query);
+                    if (!$update_run) {
+                        die('Error running round update: ' . mysql_error()); 	
+                    }
+                    }
+                    
+
+                    //UPDATE QUERY FOR ROUNDS
+                    if($_POST["process"]=="round"){
+                    $current = $_POST["current_event"];
+                    $update_query2 = 'UPDATE controls SET current_event='.$current;
+                    $update_run2 = mysql_query($update_query2);
+                    if (!$update_run2) {
+                        die('Error running round update: ' . mysql_error()); 	
+                    }
+                    }
+
+                    $rounds = array(11,12,13,21,22,23,31,32,33,40,51,52);
+                    foreach($rounds as $round) {
+                        $round_query = 'SELECT * FROM events WHERE event_key='.$round;
+                        $round_run = mysql_query($round_query);
+                        if (!$round_run) {
+                            die('Error retrieving round information: ' . mysql_error()); 
+                        }
+                        ${$round.'_row'} = mysql_fetch_assoc($round_run);
+                    }
+                    
+                    //Check Current Event
+                    $presql1 = 'SELECT * FROM controls';
+                    $prerun1 = mysql_query($presql1);
+                    if (!$prerun1) {
+                        die('Error retrieving query (1): ' . mysql_error()); 
+                    }
+                    $res1 = mysql_fetch_assoc($prerun1);
+                    $eventonrecord = $res1['current_event'];
+
+					?>
+    
+	<body>
+		<div class="header">
+			<div class="container">
+				<h1 class="header-heading">Delta Upsilon Recruitment Management</h1>
+                <h3><i>Manager Account</i></h3>
+			</div>
+		</div>
+		<div class="nav-bar">
+			<div class="container">
+				<ul class="nav">
+					<li><a href="javascript:{}" onclick="document.getElementById('home').submit(); return false;">Home</a></li>
+                    <li><a href="javascript:{}" onclick="document.getElementById('signin').submit(); return false;">Sign-In</a></li>
+					<li><a href="javascript:{}" onclick="document.getElementById('profile').submit(); return false;">Rushee Profiles</a></li>
+                    <li><a href="javascript:{}" onclick="document.getElementById('voting').submit(); return false;">Voting</a></li>
+                    <li><a href="javascript:{}" onclick="document.getElementById('downloads').submit(); return false;">Downloads</a></li>
+                    <li><a href="javascript:{}" onclick="document.getElementById('events').submit(); return false;">Events</a></li>
+                    <li><a href="javascript:{}" onclick="document.getElementById('addrushee').submit(); return false;">Add Rushee</a></li>
+				</ul>
+			</div>
+		</div>
+		<div class="content">
+			<div class="container">
+				<div class="main">
+
+					<h3>Event Management</h3>
+                    
+                    <form name="current_event" action="index.suphp" method="post">
+                    <input type="hidden" name="process" value="round" >
+                    <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+                    <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+                    <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+                    <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+                        
+                    <table border="1" width="100%">
+                    <tr bgcolor="grey">
+                    <td width="8%"><b>Current</b></td>
+                    <td width="10%"><b>Round</b></td>
+                    <td width="10%"><b>Event</b></td>
+                    <td width="30%"><b>Event Name</b></td>
+                    <td width="20%"><b>Date</b></td>
+                    <td width="15%"><b>Question</b></td>
+                    <td width="7%"><b>Edit</b></td>
+                   </tr>
+                    <?php
+                    $events = array(51,52,11,12,13,21,22,23,31,32,33,40);
+                    foreach($events as $current_event) {
+                        $r = substr($current_event,0,1);
+                        $e = substr($current_event,1,1);
+                        if($r == 5){
+                            $r = 'OH';
+                        }
+                        if($r == 4){
+                            $r = 'FH';
+                        }
+                        if($e == 0){
+                            $e = 'N/A';
+                        }
+                        if(${$current_event.'_row'}['exist'] == 'y'){
+                            echo '<tr>';
+                        }
+                        else{
+                            echo '<tr bgcolor="#FFCC66">';
+                        }
+                        
+                        //Put Current Event Check Here
+                        $checked='';
+                        if($current_event==$eventonrecord){
+                            $checked = 'checked';
+                        }
+                        echo '<td width="8%"><center><input type="radio" name="current_event"  onclick="javascript: submit()" value="'.$current_event.'" '.$checked.'><center></td>';
+                        echo '<td width="10%">'.$r.'</td>';
+                        echo '<td width="10%">'.$e.'</td>';
+                        if(${$current_event.'_row'}['exist'] == 'y'){
+                            echo '<td width="30%">'.${$current_event.'_row'}['name'].'</td>';
+                            echo '<td width="20%">'.date("D, M jS", strtotime(${$current_event.'_row'}['date'])).'</td>';
+                            if(${$current_event.'_row'}['q_exist'] == 'y'){
+                                echo '<td width="15%">'.${$current_event.'_row'}['question_tag'].'</td>';
+                            }
+                            else{
+                                echo '<td></td>';
+                            }
+                        }
+                        else{
+                            echo '<td><i><a href="javascript:{}" onclick="document.getElementById(\'eventtoupdate\').value = 
+                        \''.$current_event.'\';document.getElementById(\'update\').submit(); return false;">No Event Registered</i></a></td><td></td><td></td>';
+                        }
+                        echo '<td><a href="javascript:{}" onclick="document.getElementById(\'eventtoupdate\').value = 
+                        \''.$current_event.'\';document.getElementById(\'update\').submit(); return false;">Edit</a></td></tr>';
+                    }
+
+                    ?> 
+                    </table>
+                    </form>
+                    
+				</div>
+			</div>
+		</div>
+		<div class="footer">
+			<div class="container">
+				&copy; Copyright 2015
+			</div>
+		</div>
+        
+        
+        <!--------------------- NAV FORMS ----------------------->
+        <form action="../index.suphp" method="post" id="home">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+        </form>
+        
+        <form action="../signin/index.suphp" method="post" id="signin">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+        </form>
+        
+        <form action="#" method="post" id="profile">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+        </form>
+        
+        <form action="../vote/index.suphp" method="post" id="voting">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+        </form>
+        
+        <form action="#" method="post" id="downloads">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+        </form>
+        
+        <form action="index.suphp" method="post" id="events">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+        </form>
+        
+        <form action="../addrushee.suphp" method="post" id="addrushee">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+        </form>
+        
+        <!--------------------- END NAV FORMS ----------------------->
+        
+        <!--------------------EDIT FORM----------------------------->
+        
+        <form action="event_update.suphp" method="post" id="update">
+        <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+        <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+        <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+        <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+        <input type="hidden" name="event" id="eventtoupdate" value=NULL >
+        </form>
+        
+        <!--------------------- END EDIT FORM ----------------------->
+        
+	</body>
+</html>

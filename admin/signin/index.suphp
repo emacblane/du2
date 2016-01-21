@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>Delta Upsilon Recruitment Management</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="Description" lang="en" content="Database for managing rushees and round invitations">
+		<meta name="author" content="Eric MacBlane, emm7pr@virginia.edu">
+		<meta name="robots" content="index, follow">
+
+		<!-- icons -->
+		<link rel="apple-touch-icon" href="../../assets/img/apple-touch-icon.png">
+		<link rel="shortcut icon" href="../../assets/img/dubadge.png">
+
+		<!-- Override CSS file - add your own CSS rules -->
+		<link rel="stylesheet" href="../../assets/css/styles.css">
+	</head>
+	<body>
+		<div class="header">
+			<div class="container">
+				<h1 class="header-heading">Delta Upsilon Recruitment Management</h1>
+                <h3><i>Sign In</i></h3>
+			</div>
+		</div>
+        <div class="nav-bar">
+			<div class="container">
+				<ul class="nav">
+                    <li><a href="#">Loading...</a></li>
+				</ul>
+			</div>
+		</div>
+        
+            <div class="content">
+			<div class="container">
+				<div class="main">
+                    <?php $usr = $_POST["usr"]; $pwd = $_POST["pwd"]; $database=$_POST["dtb"]; $endpoint=$_POST["end"]; 
+		
+					$link =
+						mysql_connect($endpoint,$usr,$pwd);
+					
+					//Check if RDS is connected. !$link means that $link is not null. If its null
+					//RDS is not connected, then !$link will be 1 to make the below condition true.
+
+                    $proceed = true;
+                    if (!$link || $usr != 'admin' ) { 
+                        $proceed = false;
+			             echo '<p><b>Username or password invalid.</b></p>  <p><a href="../index.suphp">Try again?</a></p>'; 
+                    }
+
+                    //Select Database
+                    @mysql_select_db($database) or die( 'Error.  Contact rush chair or <a href="/index.suphp">try reloading</a> ');
+
+                    $presql = 'SELECT * FROM controls';
+                    $prerun = mysql_query($presql);
+                    if (!$prerun) {
+                        die('Error retrieving round information: ' . mysql_error()); 
+                    }
+                    $roundinfo = mysql_fetch_assoc($prerun);
+                    $round = substr($roundinfo['current_event'],0,1);
+                        
+					?>
+					
+					<!-- Conditional continuation form for administrators-->
+        
+					<?php if ( $proceed && $round == 5 ): ?>
+						<form action ="signin_oh/signin.suphp" method="post" id="oh">
+							<input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+							<input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+                            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+                            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+							<script type="text/javascript">
+							    document.getElementById('oh').submit(); // SUBMIT FORM
+							</script>
+						</form>
+                    <?php endif; ?>
+                    
+                    <?php if ( $proceed && $round > 0 && $round < 4 ): ?>
+						<form action ="signin_rds/signin.suphp" method="post" id="rds">
+							<input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+							<input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+                            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+                            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+							<script type="text/javascript">
+							    document.getElementById('rds').submit(); // SUBMIT FORM
+							</script>
+						</form>
+                    <?php endif; ?>
+                    
+                    <?php if ( $proceed && $round == 4 ): ?>
+						<form action ="signin_fh/signin.suphp" method="post" id="fh">
+							<input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+							<input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+                            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+                            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+							<script type="text/javascript">
+							    document.getElementById('fh').submit(); // SUBMIT FORM
+							</script>
+						</form>
+                    <?php endif; ?>
+                    
+                </div>
+                </div>
+            </div>
+		<div class="footer">
+			<div class="container">
+				&copy; Copyright 2015
+			</div>
+		</div>
+	</body>
+</html>
+
+

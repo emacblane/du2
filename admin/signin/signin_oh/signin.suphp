@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+        <?php $usr = $_POST["usr"]; $pwd = $_POST["pwd"]; $computing = $_POST["computing"]; $database=$_POST["dtb"]; $endpoint=$_POST["end"]; ?>
+        
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>Delta Upsilon Recruitment Management</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="Description" lang="en" content="Database for managing rushees and round invitations">
+		<meta name="author" content="Eric MacBlane, emm7pr@virginia.edu">
+		<meta name="robots" content="index, follow">
+
+		<!-- icons -->
+		<link rel="apple-touch-icon" href="../../../assets/img/apple-touch-icon.png">
+		<link rel="shortcut icon" href="../../../assets/img/dubadge.png">
+
+		<!-- Override CSS file - add your own CSS rules -->
+		<link rel="stylesheet" href="../../../assets/css/styles.css">
+	</head>
+    
+            <?php 
+                //DATA PROCESSING
+                $computing=$_POST["computing"];
+                $first=$_POST["first"];
+                $last=$_POST["last"];
+                $goby=$_POST["goby"];
+                $year=$_POST["year"];
+                $school=$_POST["school"];
+                $major=$_POST["major"];
+                $dorm=$_POST["dorm"];
+                $response=$_POST["response"];
+                $image_url=$_POST["image_url"];
+                $hometown=$_POST["hometown"];
+                $skip = $_POST["skip"];
+                
+                    $alt_exist = '';
+                    if($goby != '' && $goby != NULL){
+                        $alt_exist = 'y';
+                    }
+
+                $link =
+                    mysql_connect($endpoint,$usr,$pwd);
+
+                    if (!$link) { 
+			             echo '<p>Check account connectivity.</p>'; 
+                    } 
+
+                    //Select Database
+                    @mysql_select_db($database) or die( 'Error.  Contact rush chair or <a href="../../../index.html">try reloading</a> ');
+
+                    $presql1 = 'SELECT * FROM controls';
+                    $prerun1 = mysql_query($presql1);
+                    if (!$prerun1) {
+                        die('Error retrieving query (1): ' . mysql_error()); 
+                    }
+                    $res1 = mysql_fetch_assoc($prerun1);
+                    $round = $res1['current_event'];
+
+                    $presql2 = 'SELECT * FROM events WHERE event_key='.$round;
+                    $prerun2 = mysql_query($presql2);
+                    if (!$prerun2) {
+                        die('Error retrieving query (2): ' . mysql_error()); 
+                    }
+                    $eventinfo = mysql_fetch_assoc($prerun2);
+
+                    
+                    if($_POST["process"]==1){
+                            $successdiv = '<p><i>'.$computing.' Signed In</i></p><hr>';
+                        
+                        //NEW ALWAYS UPDATE NO MATTER WHAT
+                        
+                        if($skip == 'false'){
+                            $update_sql = 'UPDATE `rushees` SET `first_name`=\''.mysql_real_escape_string($first).'\', `last_name`=\''.mysql_real_escape_string($last).'\', `img_url`=\''.mysql_real_escape_string($image_url).'\', `alt_name_exist`=\''.mysql_real_escape_string($alt_exist).'\', `alt_name`=\''.mysql_real_escape_string($goby).'\', `hometown`=\''.mysql_real_escape_string($hometown).'\', `major`=\''.mysql_real_escape_string($major).'\', `dorm`=\''.mysql_real_escape_string($dorm).'\', `year`=\''.mysql_real_escape_string($year).'\', `att_'.$round.'`=\'y\', `q_'.$round.'`=\''.mysql_real_escape_string($response).'\' WHERE `computing`=\''.mysql_real_escape_string($computing).'\'';
+                            }
+                        else{
+                            $update_sql = 'UPDATE `rushees` SET `att_'.$round.'`=\'y\', `q_'.$round.'`=\''.mysql_real_escape_string($response).'\' WHERE `computing`=\''.mysql_real_escape_string($computing).'\'';
+                        }
+                        
+                        $runupdate = mysql_query($update_sql);
+                                if (!$runupdate) {
+                                    die('Error retrieving query (update): ' . mysql_error()); 
+                                }
+                        
+                        /*if (mysql_num_rows($prerun0) == 0) { //RUN INSERT STATEMENT
+                                $insert_sql = 'INSERT INTO `rushees` (`computing`, `first_name`, `last_name`, `img_url`, `alt_name_exist`, `alt_name`, `major`, `dorm`, `year`) VALUES (\''.mysql_real_escape_string($computing).'\', \''.mysql_real_escape_string($first).'\', \''.mysql_real_escape_string($last).'\', \''.mysql_real_escape_string($image_url).'\', \''.mysql_real_escape_string($alt_exist).'\', \''.mysql_real_escape_string($goby).'\', \''.mysql_real_escape_string($major).'\', \''.mysql_real_escape_string($dorm).'\', '.mysql_real_escape_string($year).')';  
+                                $runinsert = mysql_query($insert_sql);
+                            if (!$runinsert) {
+                                die('Error retrieving query (insert): ' . mysql_error()); 
+                            }
+                        } */
+                       /*   REMOVED BECAUSE OF ALL UPDATES
+                        //UPDATE ATTENDANCE AND QUESTION FOR ALL
+                                $update_sql = 'UPDATE `rushees` SET `att_'.$round.'`=\'y\' WHERE `computing`=\''.$computing.'\'';
+                                $runupdate = mysql_query($update_sql);
+                                if (!$runupdate) {
+                                    die('Error retrieving query (update): ' . mysql_error()); 
+                                }
+                        
+                                $q_update_sql = 'UPDATE `rushees` SET `q_'.$round.'`=\''.mysql_real_escape_string($response).'\' WHERE `computing`=\''.$computing.'\'';
+                                $q_runupdate = mysql_query($q_update_sql);
+                                if (!$q_runupdate) {
+                                    die('Error retrieving query (update): ' . mysql_error()); 
+                                }
+                    */
+                    }
+                 
+             ?>
+    
+	<body>
+		<div class="header">
+			<div class="container">
+				<h1 class="header-heading">Delta Upsilon Recruitment Management</h1>
+                <h3><i>Sign-In Account Active (Manager/Rush Chair)</i></h3>
+			</div>
+		</div>
+		<div class="nav-bar">
+			<div class="container">
+				<ul class="nav">
+					<li><font color="white"><?php echo $eventinfo['date']; ?></font></li>
+				</ul>
+			</div>
+		</div>
+		<div class="content">
+			<div class="container">
+				<div class="main">
+					<h2><?php echo $eventinfo['name'].' Sign In';?></h2>
+					<hr>
+                    <?php echo $successdiv; ?>
+                    <form action="signin2.suphp" method="post">
+       				  <br>
+  					<p>Computing ID: <input type="text" name="computing" required> </p>
+					<input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+					<input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+                    <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+                    <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+                    <p><input type="submit" value="Log In"></p>
+				    </form>
+    
+				</div>
+			</div>
+		</div>
+		<div class="footer">
+			<div class="container">
+				&copy; Copyright 2015
+			</div>
+		</div>
+	</body>
+</html>

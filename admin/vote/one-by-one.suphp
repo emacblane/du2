@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>Delta Upsilon Recruitment Management</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="Description" lang="en" content="Database for managing rushees and round invitations">
+		<meta name="author" content="Eric MacBlane, emm7pr@virginia.edu">
+		<meta name="robots" content="index, follow">
+
+		<!-- icons -->
+		<link rel="shortcut icon" href="../../assets/img/dubadge.png">
+        
+		<!-- Override CSS file - add your own CSS rules -->
+		
+        <link rel="stylesheet" href="../../assets/css/bootstrap.min.css">
+        <script src="../../assets/css/bootstrap.min.css"></script>
+        <link rel="stylesheet" href="../../assets/css/voting.css">
+        
+        
+        
+        
+        <?php
+            
+            $usr = $_POST["usr"]; $pwd = $_POST["pwd"]; $database=$_POST["dtb"]; $endpoint=$_POST["end"]; 
+            $lastrushee = $_POST["updatingrushee"];
+            $shuffle = $_POST["random"];
+            $stat = $_POST["stats"];
+            $dofirst = $_POST["dofirst"];
+            $updated_status = $_POST['status'];
+            $laterarray = array();
+            if($_POST["laterarray"]!=''){
+                $laterarray = unserialize($_POST["laterarray"]);
+            }
+            
+            if( $updated_status == 'y' || $updated_status == 'n' ){
+                if (($preprekey = array_search($lastrushee, $laterarray)) !== false) {
+                        unset($laterarray[$preprekey]);
+                }
+            }
+            
+
+            $link =
+                mysql_connect($endpoint,$usr,$pwd);
+
+            // Check if RDS is connected. !$link means that $link is not null. If its null
+            //RDS is not connected, then !$link will be 1 to make the below condition true.
+
+
+            if (!$link) { 
+                 echo '<p><b>Username or password invalid.</b></p>  <p><a href="../../index.html">Try again?</a></p>'; 
+            } 
+            @mysql_select_db($database) or die( "Unable to select database");
+            
+            //Check Current Event
+            $presql1 = 'SELECT * FROM controls';
+            $prerun1 = mysql_query($presql1);
+            if (!$prerun1) {
+                die('Error retrieving query (1): ' . mysql_error()); 
+            }
+            $res1 = mysql_fetch_assoc($prerun1);
+            $eventonrecord = $res1['current_event'];
+            $roundonrecord = substr($eventonrecord,0,1);
+            
+
+            $roundcheck='';
+            if($roundonrecord == 5){
+                $roundcheck='i_1';
+                $votefor = 'Round 1';
+            }
+            if($roundonrecord == 1){
+                $roundcheck='i_2';
+                $votefor = 'Round 2';
+            }
+            if($roundonrecord == 2){
+                $roundcheck='i_3';
+                $votefor = 'Round 3';
+            }
+            if($roundonrecord == 3 || $roundonrecord == 4){
+                $roundcheck='i_bid';
+                $votefor = 'Bid';
+            }
+            
+
+            if($lastrushee != '' ){
+            $update_field = $roundcheck;
+            $update_sql = '';
+            if($updated_status == 'n'){
+                            if($update_field == 'i_1'){
+                                $update_sql = 'UPDATE `rushees` SET i_1=\'n\', i_2=\'n\', i_3=\'n\', i_bid=\'n\' WHERE `computing`=\''.$lastrushee.'\'';
+                            }
+                            if($update_field == 'i_2'){
+                                $update_sql = 'UPDATE `rushees` SET i_2=\'n\', i_3=\'n\', i_bid=\'n\' WHERE `computing`=\''.$lastrushee.'\'';
+                            }
+                            if($update_field == 'i_3'){
+                                $update_sql = 'UPDATE `rushees` i_3=\'n\', i_bid=\'n\' WHERE `computing`=\''.$lastrushee.'\'';
+                            }
+                            if($update_field == 'i_bid'){
+                            $update_sql = 'UPDATE `rushees` SET i_bid=\'n\' WHERE `computing`=\''.$lastrushee.'\'';
+                            }
+                        }
+                        if($updated_status == 'y'){
+                            $actionable = 'y';
+                            $update_sql = 'UPDATE `rushees` SET `'.$update_field.'`=\''.$actionable.'\' WHERE `computing`=\''.$lastrushee.'\'';
+                        }
+                        if($updated_status == '0'){
+                            if($update_field == 'i_1'){
+                                $update_sql = 'UPDATE `rushees` SET i_1=\'0\', i_2=\'0\', i_3=\'0\', i_bid=\'0\' WHERE `computing`=\''.$lastrushee.'\'';
+                            }
+                            if($update_field == 'i_2'){
+                                $update_sql = 'UPDATE `rushees` SET i_2=\'0\', i_3=\'0\', i_bid=\'0\' WHERE `computing`=\''.$lastrushee.'\'';
+                            }
+                            if($update_field == 'i_3'){
+                                $update_sql = 'UPDATE `rushees` i_3=\'0\', i_bid=\'0\' WHERE `computing`=\''.$lastrushee.'\'';
+                            }
+                            if($update_field == 'i_bid'){
+                            $update_sql = 'UPDATE `rushees` SET i_bid=\'0\' WHERE `computing`=\''.$lastrushee.'\'';
+                            }
+                        }
+                    $runupdate = mysql_query($update_sql);
+                    if (!$runupdate) {
+                        die('Error updating rushee: ' . mysql_error()); 
+                    }  
+            }
+
+
+            $rounds = array(11,12,13,21,22,23,31,32,33,40,51,52);
+            foreach($rounds as $round) {
+                $round_query = 'SELECT * FROM events WHERE event_key='.$round;
+                $round_run = mysql_query($round_query);
+                if (!$round_run) {
+                    die('Error retrieving round information: ' . mysql_error()); 
+                }
+                ${$round.'_row'} = mysql_fetch_assoc($round_run);
+            }
+        
+            
+            //Get array
+            $sqlar = 'SELECT computing FROM rushees WHERE '.$roundcheck.'!=\'y\''." && ".$roundcheck.'!=\'n\' ORDER BY computing';
+            $resultar = mysql_query($sqlar);
+            $rusheearray = array();
+            $notdonearray = array();
+            $callarray = array();
+            while ($computes = mysql_fetch_array($resultar)) {
+              $rusheearray[] = $computes['computing']; 
+            }
+
+            
+                    
+
+            //IF DOFIRST REQUESTED, PUT FIRST
+            
+            if($dofirst != ''){
+            $dofirstarray = array();
+            $dofirstarray[] = $dofirst;
+            if (($prekey = array_search($dofirst, $rusheearray)) !== false) {
+                unset($rusheearray[$prekey]);
+            }
+            $rusheearray = array_merge($dofirstarray,$rusheearray);
+            }
+            
+                //SEARCH FOR LAST ID IN RUSHEEARRAY
+                if (($key = array_search($lastrushee, $rusheearray)) !== false) {
+                    //ADD LAST ID TO LATERARRAY
+                    $laterarray[] = $rusheearray[$key];
+                    $laterarray = array_unique($laterarray);
+                    shuffle($laterarray); //Shuffle laterarray regardless
+                }
+
+                //TAKE ARRAY DIFFERENCE OF RUSHEEARRAY AND LATERARRAY (NOTDONEARRAY)
+                $notdonearray = array_diff($rusheearray, $laterarray);
+                
+                    
+                     //IF SHUFFLE IS ON
+                        if ( $shuffle == 'y' && $dofirst == '' ){
+
+                            //SHUFFLE NOTDONARRAY
+                            shuffle($notdonearray);
+            
+                        }
+
+
+                    //IF SHUFFLE IS NOT ON
+                       else{
+
+                            //SORT NOTDONARRAY ALPHABETICALLY
+                           if( $dofirst == ''){
+                                sort($notdonearray, SORT_STRING);
+                           }
+
+                        }
+
+            //ADD ON LATERARRAY TO END OF NOTDONEARRAY ARRAY (CALLARRAY)
+            $callarray = array_merge($notdonearray, $laterarray);
+            //SERIALIZE LATERARRAY, POST LATERARRAY
+            //Get current computing ID
+            $computing = $callarray[0];
+
+            if($computing != ''){
+
+            //Get RUSHEE Info
+            $presql0 = 'SELECT * FROM rushees WHERE computing=\''.$computing.'\'';
+            $prerun0 = mysql_query($presql0);
+            if (!$prerun0) {
+                die('Error retrieving query (1): ' . mysql_error()); 
+            }
+            $rushee = mysql_fetch_assoc($prerun0);
+            }
+
+        ?>
+        
+        <?php if($computing =='' || empty($computing)){ $rushee['img_url']='http://vignette4.wikia.nocookie.net/zigochen/images/1/14/Black-screen_2511_1.jpg/revision/latest?cb=20121106043000';}
+        
+        ?>
+        
+       
+        <style type = "text/css" scoped>
+            html,
+            body {
+            /*css for full size background image*/
+              background: url(<?php echo $rushee['img_url']; ?>) no-repeat center center fixed; 
+            background-size: cover;
+            background-repeat:no-repeat;
+            }
+            .mastfoot {
+              color: #FFFFFF; /* IE8 proofing */
+              color: rgb(255,255,255);
+            }
+        </style>
+        
+        <!------------------BACK SCRIPT------------------>
+        <form action="index.suphp" method="post" id="back">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+        </form>
+        
+        <!------------------BALL SCRIPT------------------>
+        <form action="one-by-one.suphp" method="post" id="ball">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+            <input type="hidden" name="stats" value="<?php echo $stat ; ?>" >
+            <input type="hidden" name="random" value="<?php echo $shuffle ; ?>" >
+            <input type="hidden" name="updatingrushee" value="<?php echo $computing ; ?>" >
+            <input type="hidden" name="status" value="n" >
+            <input type="hidden" name="laterarray" value="<?php echo htmlentities(serialize($laterarray)); ?>" >
+        </form>
+        
+        <!------------------MAYBE SCRIPT------------------>
+        <form action="one-by-one.suphp" method="post" id="maybe">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+            <input type="hidden" name="stats" value="<?php echo $stat ; ?>" >
+            <input type="hidden" name="random" value="<?php echo $shuffle ; ?>" >
+            <input type="hidden" name="updatingrushee" value="<?php echo $computing ; ?>" >
+            <input type="hidden" name="status" value="0" >
+            <input type="hidden" name="laterarray" value="<?php echo htmlentities(serialize($laterarray)); ?>" >
+        </form>
+        
+        <!------------------ADVANCE SCRIPT------------------>
+        <form action="one-by-one.suphp" method="post" id="advance">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+            <input type="hidden" name="stats" value="<?php echo $stat ; ?>" >
+            <input type="hidden" name="random" value="<?php echo $shuffle ; ?>" >
+            <input type="hidden" name="updatingrushee" value="<?php echo $computing ; ?>" >
+            <input type="hidden" name="status" value="y" >
+            <input type="hidden" name="laterarray" value="<?php echo htmlentities(serialize($laterarray)); ?>" >
+        </form>
+        
+        <?php if($computing !=''): ?>
+        
+        
+        <!------------------RANDOM ON SCRIPT------------------>
+        <form action="one-by-one.suphp" method="post" id="random_on">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+            <input type="hidden" name="stats" value="<?php echo $stat ; ?>" >
+            <input type="hidden" name="random" value="y" >
+            <input type="hidden" name="dofirst" value="<?php echo $computing ; ?>" >
+            <input type="hidden" name="laterarray" value="<?php echo htmlentities(serialize($laterarray)); ?>" >
+        </form>
+        
+        <!------------------RANDOM OFF SCRIPT------------------>
+        <form action="one-by-one.suphp" method="post" id="random_off">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+            <input type="hidden" name="stats" value="<?php echo $stat ; ?>" >
+            <input type="hidden" name="dofirst" value="<?php echo $computing ; ?>" >
+            <input type="hidden" name="random" value="n" >
+            <input type="hidden" name="laterarray" value="<?php echo htmlentities(serialize($laterarray)); ?>" >
+        </form>
+        
+        <!------------------STAT ON SCRIPT------------------>
+        <form action="one-by-one.suphp" method="post" id="stats_on">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+            <input type="hidden" name="stats" value="y" >
+            <input type="hidden" name="random" value="<?php echo $shuffle ; ?>" >
+            <input type="hidden" name="dofirst" value="<?php echo $computing ; ?>" >
+            <input type="hidden" name="laterarray" value="<?php echo htmlentities(serialize($laterarray)); ?>" >
+        </form>
+        
+        <!------------------STAT OFF SCRIPT------------------>
+        <form action="one-by-one.suphp" method="post" id="stats_off">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+            <input type="hidden" name="stats" value="n" >
+            <input type="hidden" name="random" value="<?php echo $shuffle ; ?>" >
+            <input type="hidden" name="dofirst" value="<?php echo $computing ; ?>" >
+            <input type="hidden" name="laterarray" value="<?php echo htmlentities(serialize($laterarray)); ?>" >
+        </form>
+        
+        <!------------------CHANGE ROUND SCRIPT------------------>
+        <form action="../events/index.suphp" method="post" id="events">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+        </form>
+        
+	</head>
+    <body>
+        <div class="site-wrapper">
+          <div class="site-wrapper-inner">
+            <div class="cover-container">
+              <div class="masthead clearfix">
+                <div class="inner">
+                  <ul class="nav masthead-nav">
+                    <li>
+                      <a href="javascript:{}" onclick="document.getElementById('back').submit(); return false;">Go Back</a>
+                    </li>
+                    <li>
+                      <a href="javascript:{}" onclick="document.getElementById('ball').submit(); return false;"><font color="red">Ball</font></a>
+                    </li>
+                    <li>
+                      <a href="javascript:{}" onclick="document.getElementById('maybe').submit(); return false;"><font color="yellow">Save for End</font></a>
+                    </li>
+                    <li>
+                      <a href="javascript:{}" onclick="document.getElementById('advance').submit(); return false;"><font color="limegreen">Advance</font></a>
+                    </li>
+                    <li>
+                        <?php if( $stat == 'y' ): ?>
+                      <a href="javascript:{}" onclick="document.getElementById('stats_off').submit(); return false;">Stats: On</a>
+                        <?php endif; ?>
+                        <?php if( $stat != 'y' ): ?>
+                      <a href="javascript:{}" onclick="document.getElementById('stats_on').submit(); return false;">Stats: Off</a>
+                        <?php endif; ?>
+                    </li>
+                      <li>
+                        <?php if( $shuffle == 'y' ): ?>
+                      <a href="javascript:{}" onclick="document.getElementById('random_off').submit(); return false;">Random: On</a>
+                        <?php endif; ?>
+                        <?php if( $shuffle != 'y' ): ?>
+                      <a href="javascript:{}" onclick="document.getElementById('random_on').submit(); return false;">Random: Off</a>
+                        <?php endif; ?>
+                    </li>
+                      <li>
+                      <a href="javascript:{}" onclick="document.getElementById('events').submit(); return false;">Voting for: <?php echo $votefor ?></a>
+                     </li>
+                  </ul>
+                  
+                </div>
+                  <?php 
+                    if($rushee['alt_name_exist']==y){
+                        $rushee['first_name'] = $rushee['alt_name'];
+                    }
+                    if($rushee['year']==1){
+                        $year = '1<sup>st</sup>';
+                    }
+                    if($rushee['year']==2){
+                        $year = '2<sup>nd</sup>';
+                    }
+                    if($rushee['year']==3){
+                        $year = '3<sup>rd</sup>';
+                    }
+                    if($rushee['year']==4){
+                        $year = '4<sup>th</sup>';
+                    }
+                    if($rushee['legacy']=='y'){
+                        $legacy = ' Legacy ';
+                    }
+                    else{
+                        $legacy = ' ';
+                    }
+                    
+                  ?>   
+                     
+                  <p><br><h1><?php echo $rushee['first_name'].' '.$rushee['last_name'];?></h1></p>
+                  <p><h3><i><?php echo $year; ?> Year <?php echo $legacy; ?> studying <?php echo $rushee['major']; ?> from <?php echo $rushee['hometown']; ?></i></h3></p>
+              </div>
+
+              <div class="mastfoot">
+                <div class="inner">
+                  <!-- Validation -->
+                    <b><u><font size=+1>Events Attended</font></h3></u></b>
+                  <br><b><u>Open House:</u></b> 
+                  <?php 
+                    $oh_result = '';
+                    if($rushee['att_51']=='y'){
+                        $oh_result = ${'51_row'}['name'];
+                        if(${'51_row'}['q_exist']=='y'){
+                            $oh_result = $oh_result.' ('.${'51_row'}['question_tag'].'): '.$rushee['q_51'];
+                        }
+                    }
+                    if($rushee['att_52']=='y'){
+                        if($rushee['att_51']=='y'){ //IF 51 ALSO WAS ATTENDED
+                            $oh_result = $oh_result.'; ';
+                        }
+                        $oh_result = $oh_result.${'52_row'}['name'];
+                        if(${'52_row'}['q_exist']=='y'){
+                            $oh_result = $oh_result.' ('.${'52_row'}['question_tag'].'): '.$rushee['q_52'];
+                        }
+                    } 
+                    echo $oh_result;
+                  ?>    
+                  <br>
+                      
+                  <?php if ($roundonrecord >= 1 && $roundonrecord !=5): ?>
+                  <b><u>Round 1:</u></b> 
+                    <?php 
+                    $r1_result = '';
+                    if($rushee['att_11']=='y'){
+                        $r1_result = ${'11_row'}['name'];
+                        if(${'11_row'}['q_exist']=='y'){
+                            $r1_result = $r1_result.' ('.${'11_row'}['question_tag'].'): '.$rushee['q_11'];
+                        }
+                    }
+                    if($rushee['att_12']=='y'){
+                        if($rushee['att_11']=='y'){ 
+                            $r1_result = $r1_result.'; ';
+                        }
+                        $oh_result = $oh_result.${'12_row'}['name'];
+                        if(${'12_row'}['q_exist']=='y'){
+                            $r1_result = $r1_result.' ('.${'12_row'}['question_tag'].'): '.$rushee['q_12'];
+                        }
+                    } 
+                    if($rushee['att_13']=='y'){
+                        if($rushee['att_11']=='y'||$rushee['att_12']=='y'){ 
+                            $r1_result = $r1_result.'; ';
+                        }
+                        $oh_result = $oh_result.${'13_row'}['name'];
+                        if(${'13_row'}['q_exist']=='y'){
+                            $r1_result = $r1_result.' ('.${'13_row'}['question_tag'].'): '.$rushee['q_13'];
+                        }
+                    } 
+                    echo $r1_result;
+                  ?>   
+                  <br>
+                  <?php endif; ?>
+                    
+                  <?php if ($roundonrecord >= 2 && $roundonrecord !=5): ?>
+                  <b><u>Round 2:</u></b> 
+                    <?php 
+                    $r2_result = '';
+                    if($rushee['att_21']=='y'){
+                        $r2_result = ${'21_row'}['name'];
+                        if(${'21_row'}['q_exist']=='y'){
+                            $r2_result = $r2_result.' ('.${'21_row'}['question_tag'].'): '.$rushee['q_21'];
+                        }
+                    }
+                    if($rushee['att_22']=='y'){
+                        if($rushee['att_21']=='y'){ 
+                            $r2_result = $r2_result.'; ';
+                        }
+                        $r2_result = $r2_result.${'22_row'}['name'];
+                        if(${'22_row'}['q_exist']=='y'){
+                            $r2_result = $r2_result.' ('.${'22_row'}['question_tag'].'): '.$rushee['q_22'];
+                        }
+                    } 
+                    if($rushee['att_23']=='y'){
+                        if($rushee['att_21']=='y'||$rushee['att_22']=='y'){ 
+                            $r2_result = $r2_result.'; ';
+                        }
+                        $r2_result = $r2_result.${'23_row'}['name'];
+                        if(${'23_row'}['q_exist']=='y'){
+                            $r2_result = $r2_result.' ('.${'23_row'}['question_tag'].'): '.$rushee['q_23'];
+                        }
+                    } 
+                    echo $r2_result;
+                  ?>   
+                  <br>
+                  <?php endif; ?>
+                    
+                  <?php if ($roundonrecord >= 3 && $roundonrecord !=5): ?>
+                  <b><u>Round 3:</u></b> 
+                    <?php 
+                    $r3_result = '';
+                    if($rushee['att_31']=='y'){
+                        $r3_result = ${'31_row'}['name'];
+                        if(${'31_row'}['q_exist']=='y'){
+                            $r3_result = $r3_result.' ('.${'31_row'}['question_tag'].'): '.$rushee['q_31'];
+                        }
+                    }
+                    if($rushee['att_32']=='y'){
+                        if($rushee['att_31']=='y'){ 
+                            $r3_result = $r3_result.'; ';
+                        }
+                        $oh_result = $oh_result.${'32_row'}['name'];
+                        if(${'32_row'}['q_exist']=='y'){
+                            $r3_result = $r3_result.' ('.${'32_row'}['question_tag'].'): '.$rushee['q_32'];
+                        }
+                    } 
+                    if($rushee['att_33']=='y'){
+                        if($rushee['att_31']=='y'||$rushee['att_32']=='y'){ 
+                            $r3_result = $r3_result.'; ';
+                        }
+                        $r3_result = $r3_result.${'33_row'}['name'];
+                        if(${'33_row'}['q_exist']=='y'){
+                            $r3_result = $r3_result.' ('.${'33_row'}['question_tag'].'): '.$rushee['q_33'];
+                        }
+                    } 
+                    echo $r3_result;
+                  ?>   
+                  <br>
+                  <?php endif; ?>
+                    
+                  <?php if ($roundonrecord == 4 ): ?>
+                    <b><u>Final Hours:</u></b> 
+                  <?php 
+                    $fh_result = '';
+                    if($rushee['att_40']=='y'){
+                        $fh_result = ${'40_row'}['name'];
+                        if(${'40_row'}['q_exist']=='y'){
+                            $fh_result = $oh_result.' ('.${'40_row'}['question_tag'].'): '.$rushee['q_40'];
+                        }
+                        $fh_result = $fh_result.' -- <b>RANK: '.$rushee['fh_rank'].' -- '.$rushee['fh_timestamp'];
+                    }
+                    echo $fh_result;
+                    ?>  
+                    
+                  <?php endif; ?>
+                  
+                  
+                  <?php 
+                        
+                    if($stat == 'y'){
+                    $sql_y = 'SELECT SUM(CASE WHEN '.$roundcheck.'=\'y\' THEN 1 ELSE 0 END) FROM rushees';
+                    $run_y = mysql_query($sql_y);
+                    $res_y = mysql_fetch_array($run_y);
+
+                    $sql_n = 'SELECT SUM(CASE WHEN '.$roundcheck.'=\'n\' THEN 1 ELSE 0 END) FROM rushees';
+                    $run_n = mysql_query($sql_n);
+                    $res_n = mysql_fetch_array($run_n);
+
+                    $sql_0 = 'SELECT SUM(CASE WHEN '.$roundcheck.'=\'0\' THEN 1 ELSE 0 END) FROM rushees';
+                    $run_0 = mysql_query($sql_0);
+                    $res_0 = mysql_fetch_array($run_0);
+
+                    echo '<p><b>To Go: '.$res_0[0].' -- Invites: '.$res_y[0].' -- Balled: '.$res_n[0].'</b></p>';
+                    }
+                  ?>
+                      
+                <?php endif; ?>
+
+                  <?php if($computing =='' || empty($computing)): ?>
+                  </head>
+    <body>
+        <div class="site-wrapper">
+          <div class="site-wrapper-inner">
+            <div class="cover-container">
+              <div class="masthead clearfix">
+                <div class="inner">
+                  <ul class="nav masthead-nav">
+                    <li>
+                      <a href="javascript:{}" onclick="document.getElementById('back').submit(); return false;">Go Back</a>
+                    </li>
+                    <li>
+                        <?php if( $stat == 'y' ): ?>
+                      <a href="javascript:{}" onclick="document.getElementById('stats_off').submit(); return false;">Stats: On</a>
+                        <?php endif; ?>
+                        <?php if( $stat != 'y' ): ?>
+                      <a href="javascript:{}" onclick="document.getElementById('stats_on').submit(); return false;">Stats: Off</a>
+                        <?php endif; ?>
+                    </li>
+                      <li>
+                        <?php if( $shuffle == 'y' ): ?>
+                      <a href="javascript:{}" onclick="document.getElementById('random_off').submit(); return false;">Random: On</a>
+                        <?php endif; ?>
+                        <?php if( $shuffle != 'y' ): ?>
+                      <a href="javascript:{}" onclick="document.getElementById('random_on').submit(); return false;">Random: Off</a>
+                        <?php endif; ?>
+                    </li>
+                      <li>
+                      <a href="javascript:{}" onclick="document.getElementById('events').submit(); return false;">Voting for: <?php echo $votefor ?></a>
+                     </li>
+                  </ul>
+                  
+                </div>
+                 
+                     
+                  <p><br><h1>No additional rushees to vote on.  <a href="javascript:{}" onclick="document.getElementById('back').submit(); return false;">Go Back?</a></h1></p>
+                  
+                <?php endif; ?>
+                  
+                </div>
+              </div>
+            </div>
+        </div>
+        </div>
+	</body>
+</html>

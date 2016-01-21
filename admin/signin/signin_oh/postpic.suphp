@@ -1,0 +1,12 @@
+<?php
+            define('UPLOAD_DIR', 'images/');
+            $img = $_POST['postpic'];
+            $img = str_replace('data:image/png;base64,', '', $img);
+            $img = str_replace(' ', '+', $img);
+            $data = base64_decode($img);
+            $file = UPLOAD_DIR . uniqid() . '.png';
+            $success = file_put_contents($file, $data);
+            echo '<input type="hidden" id="img_url" name="image_url" value="http://people.virginia.edu/~emm7pr/du2/admin/signin/signin_oh/'.$file.'">';
+            echo '<img src = "http://people.virginia.edu/~emm7pr/du2/admin/signin/signin_oh/'.$file.'">';
+            //print $success ? $file : 'Unable to save the file.';
+?>

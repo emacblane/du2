@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>Delta Upsilon Recruitment Management</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="Description" lang="en" content="Database for managing rushees and round invitations">
+		<meta name="author" content="Eric MacBlane, emm7pr@virginia.edu">
+		<meta name="robots" content="index, follow">
+
+		<!-- icons -->
+		<link rel="apple-touch-icon" href="../assets/img/apple-touch-icon.png">
+		<link rel="shortcut icon" href="../assets/img/dubadge.png">
+
+		<!-- Override CSS file - add your own CSS rules -->
+		<link rel="stylesheet" href="../assets/css/styles.css">
+	</head>
+    
+                    <?php $usr = $_POST["usr"]; $pwd = $_POST["pwd"]; $database=$_POST["dtb"]; $endpoint=$_POST["end"]; 
+		            
+					$link =
+						mysql_connect($endpoint,$usr,$pwd);
+					
+					// Check if RDS is connected. !$link means that $link is not null. If its null
+					//RDS is not connected, then !$link will be 1 to make the below condition true.
+
+
+                    if (!$link) { 
+			             echo '<p><b>Username or password invalid.</b></p>  <p><a href="../du2/index.html">Try again?</a></p>'; 
+                    } 
+		
+					?>
+    
+	<body>
+		<div class="header">
+			<div class="container">
+				<h1 class="header-heading">Delta Upsilon Recruitment Management</h1>
+                <h3><i>Manager Account</i></h3>
+			</div>
+		</div>
+		<div class="nav-bar">
+			<div class="container">
+				<ul class="nav">
+                    <li><a href="javascript:{}" onclick="document.getElementById('home').submit(); return false;">Home</a></li>
+					<li><a href="javascript:{}" onclick="document.getElementById('signin').submit(); return false;">Sign-In</a></li>
+					<li><a href="javascript:{}" onclick="document.getElementById('profile').submit(); return false;">Rushee Profiles</a></li>
+                    <li><a href="javascript:{}" onclick="document.getElementById('voting').submit(); return false;">Voting</a></li>
+                    <li><a href="javascript:{}" onclick="document.getElementById('downloads').submit(); return false;">Downloads</a></li>
+                    <li><a href="javascript:{}" onclick="document.getElementById('events').submit(); return false;">Events</a></li>
+                    <li><a href="javascript:{}" onclick="document.getElementById('addrushee').submit(); return false;">Add Rushee</a></li>
+				</ul>
+			</div>
+		</div>
+		<div class="content">
+			<div class="container">
+				<div class="main">
+					<h1>Home</h1>
+					<hr>
+
+					<h3>Round Statistics</h3>
+                    <ul>
+                        <li>Date: </li>
+                        <li>Round: </li>
+                        <li>Invites Given: </li>
+                        <li>Event 1 Attendees (<code>Event Name</code>): </li>
+                        <li>Event 2 Attendees (<code>Event Name</code>): </li>
+                        <li>Event 3 Attendees (<code>Event Name</code>): </li>
+                        <li>Overall Round Attendance (Unique): </li>
+                    </ul>
+    
+				</div>
+			</div>
+		</div>
+		<div class="footer">
+			<div class="container">
+				&copy; Copyright 2015
+			</div>
+		</div>
+        
+        
+        <!--------------------- NAV FORMS ----------------------->
+        
+        <form action="index.suphp" method="post" id="home">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+        </form>
+        
+        <form action="signin/index.suphp" method="post" id="signin">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+        </form>
+        
+        <form action="#" method="post" id="profile">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+        </form>
+        
+        <form action="vote/index.suphp" method="post" id="voting">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+        </form>
+        
+        <form action="#" method="post" id="downloads">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+        </form>
+        
+        <form action="events/index.suphp" method="post" id="events">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+        </form>
+        
+        <form action="addrushee.suphp" method="post" id="addrushee">
+            <input type="hidden" name="usr" value="<?php echo $usr ; ?>" >
+            <input type="hidden" name="pwd" value="<?php echo $pwd ; ?>" >
+            <input type="hidden" name="dtb" value="<?php echo $database ; ?>" >
+            <input type="hidden" name="end" value="<?php echo $endpoint ; ?>" >
+        </form>
+        
+        <!--------------------- END NAV FORMS ----------------------->
+        
+        
+	</body>
+</html>
