@@ -59,11 +59,11 @@
             if (!$prerun1) {
                 die('Error retrieving query (1): ' . mysql_error()); 
             }
-
             $res1 = mysql_fetch_assoc($prerun1);
             $eventonrecord = $res1['current_event'];
             $roundonrecord = substr($eventonrecord,0,1);
             
+
             $roundcheck='';
             if($roundonrecord == 5){
                 $roundcheck='i_1';
@@ -94,10 +94,10 @@
                                 $update_sql = 'UPDATE `rushees` SET i_2=\'n\', i_3=\'n\', i_bid=\'n\' WHERE `computing`=\''.$lastrushee.'\'';
                             }
                             if($update_field == 'i_3'){
-                                $update_sql = 'UPDATE `rushees` SET i_3=\'n\', i_bid=\'n\' WHERE `computing`=\''.$lastrushee.'\'';
+                                $update_sql = 'UPDATE `rushees` i_3=\'n\', i_bid=\'n\' WHERE `computing`=\''.$lastrushee.'\'';
                             }
                             if($update_field == 'i_bid'){
-                                $update_sql = 'UPDATE `rushees` SET i_bid=\'n\' WHERE `computing`=\''.$lastrushee.'\'';
+                            $update_sql = 'UPDATE `rushees` SET i_bid=\'n\' WHERE `computing`=\''.$lastrushee.'\'';
                             }
                         }
                         if($updated_status == 'y'){
@@ -112,7 +112,7 @@
                                 $update_sql = 'UPDATE `rushees` SET i_2=\'0\', i_3=\'0\', i_bid=\'0\' WHERE `computing`=\''.$lastrushee.'\'';
                             }
                             if($update_field == 'i_3'){
-                                $update_sql = 'UPDATE `rushees` SET i_3=\'0\', i_bid=\'0\' WHERE `computing`=\''.$lastrushee.'\'';
+                                $update_sql = 'UPDATE `rushees` i_3=\'0\', i_bid=\'0\' WHERE `computing`=\''.$lastrushee.'\'';
                             }
                             if($update_field == 'i_bid'){
                             $update_sql = 'UPDATE `rushees` SET i_bid=\'0\' WHERE `computing`=\''.$lastrushee.'\'';
@@ -137,7 +137,7 @@
         
             
             //Get array
-            $sqlar = 'SELECT computing, first_name, last_name FROM rushees WHERE '.$roundcheck.'!=\'y\''." && ".$roundcheck.'!=\'n\' && '.$roundcheck.'!=\'a\'  ORDER BY first_name, last_name';
+            $sqlar = 'SELECT computing FROM rushees WHERE '.$roundcheck.'!=\'y\''." && ".$roundcheck.'!=\'n\' && '.$roundcheck.'!=\'a\'  ORDER BY first_name, last_name';
             $resultar = mysql_query($sqlar);
             $rusheearray = array();
             $notdonearray = array();
@@ -145,6 +145,9 @@
             while ($computes = mysql_fetch_array($resultar)) {
               $rusheearray[] = $computes['computing']; 
             }
+
+            
+                    
 
             //IF DOFIRST REQUESTED, PUT FIRST
             
@@ -183,7 +186,7 @@
 
                             //SORT NOTDONARRAY ALPHABETICALLY
                            if( $dofirst == ''){
-                               
+                                sort($notdonearray, SORT_STRING);
                            }
 
                         }
@@ -382,16 +385,16 @@
                         $year = '1<sup>st</sup>';
                     }
                     if($rushee['year']==2){
-                        $year = '<font color="red" size="+4"><b>2<sup>nd</b></sup></font>';
+                        $year = '2<sup>nd</sup>';
                     }
                     if($rushee['year']==3){
-                        $year = '<font color="red" size="+4"><b>3<sup>rd</b></sup></font>';
+                        $year = '3<sup>rd</sup>';
                     }
                     if($rushee['year']==4){
-                        $year = '<font color="red" size="+4"><b>4<sup>th</b></sup></font>';
+                        $year = '4<sup>th</sup>';
                     }
                     if($rushee['legacy']=='y'){
-                        $legacy = ' <font color="red" size="+4"><b>Legacy</b></font> ';
+                        $legacy = ' Legacy ';
                     }
                     else{
                         $legacy = ' ';
@@ -560,7 +563,7 @@
                     $run_0 = mysql_query($sql_0);
                     $res_0 = mysql_fetch_array($run_0);
 
-                    echo '<font size="+2"><p><b>To Go: '.$res_0[0].' -- Invites: '.$res_y[0].' -- Balled: '.$res_n[0].'</b></p></font>';
+                    echo '<p><b>To Go: '.$res_0[0].' -- Invites: '.$res_y[0].' -- Balled: '.$res_n[0].'</b></p>';
                     }
                   ?>
                       

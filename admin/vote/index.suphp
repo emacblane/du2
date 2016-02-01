@@ -51,7 +51,7 @@
                                 $update_sql = 'UPDATE `rushees` SET i_2=\'n\', i_3=\'n\', i_bid=\'n\' WHERE `computing`=\''.$computing.'\'';
                             }
                             if($update_field == 'i_3'){
-                                $update_sql = 'UPDATE `rushees` i_3=\'n\', i_bid=\'n\' WHERE `computing`=\''.$computing.'\'';
+                                $update_sql = 'UPDATE `rushees` SET i_3=\'n\', i_bid=\'n\' WHERE `computing`=\''.$computing.'\'';
                             }
                             if($update_field == 'i_bid'){
                             $update_sql = 'UPDATE `rushees` SET i_bid=\'n\' WHERE `computing`=\''.$computing.'\'';
@@ -69,7 +69,7 @@
                                 $update_sql = 'UPDATE `rushees` SET i_2=\'0\', i_3=\'0\', i_bid=\'0\' WHERE `computing`=\''.$computing.'\'';
                             }
                             if($update_field == 'i_3'){
-                                $update_sql = 'UPDATE `rushees` i_3=\'0\', i_bid=\'0\' WHERE `computing`=\''.$computing.'\'';
+                                $update_sql = 'UPDATE `rushees` SET i_3=\'0\', i_bid=\'0\' WHERE `computing`=\''.$computing.'\'';
                             }
                             if($update_field == 'i_bid'){
                             $update_sql = 'UPDATE `rushees` SET i_bid=\'0\' WHERE `computing`=\''.$computing.'\'';

@@ -17,7 +17,7 @@
 		<link rel="stylesheet" href="../assets/css/styles.css">
 	</head>
     
-                    <?php $usr = $_POST["usr"]; $pwd = $_POST["pwd"]; $database=$_POST["dtb"]; $endpoint=$_POST["end"]; $process=$_POST["process"]; $computing=$_POST["computing"]; $textforrushee='';
+                    <?php $usr = $_POST["usr"]; $pwd = $_POST["pwd"]; $database=$_POST["dtb"]; $endpoint=$_POST["end"]; $process=$_POST["process"]; $computing=strtolower($_POST["computing"]); $textforrushee='';
 		            
 					$link =
 						mysql_connect($endpoint,$usr,$pwd);

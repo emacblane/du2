@@ -29,8 +29,63 @@
                     if (!$link) { 
 			             echo '<p><b>Username or password invalid.</b></p>  <p><a href="../du2/index.html">Try again?</a></p>'; 
                     } 
-		
+
+                    //Select Database
+                    @mysql_select_db($database) or die( 'Error.  Contact rush chair or <a href="../../index.html">try reloading</a> ');
+                    
+                    //GET ROUND INFORMATION
+                    
+                    $presql1 = 'SELECT * FROM controls';
+                    $prerun1 = mysql_query($presql1);
+                    if (!$prerun1) {
+                        die('Error retrieving query (1): ' . mysql_error()); 
+                    }
+                    $res1 = mysql_fetch_assoc($prerun1);
+                    $eventonrecord = $res1['current_event'];
+                    $round_current = intval(substr($eventonrecord,0,1));
+
+                    if($round_current == 5){
+                        $round_name_current = 'Open House';
+                        $round_name_next = 'Round 1';
+                        $round_next = '1';
+                    }
+                    if($round_current == 4){
+                        $round_name_current = 'Round 3';
+                        $round_name_next = 'Bid';
+                        $round_next = 'bid';
+                    }
+                    if($round_current == 3){
+                        $round_name_current = 'Round 3';
+                        $round_name_next = 'Bid';
+                        $round_next = 'bid';
+                    }
+                    if($round_current == 2){
+                        $round_name_current = 'Round 2';
+                        $round_name_next = 'Round 3';
+                        $round_next = '3';
+                    }
+                    if($round_current == 1){
+                        $round_name_current = 'Round 1';
+                        $round_name_next = 'Round 2';
+                        $round_next = '2';
+                    }
+                
+    
+                    ${'1_sql_attend'} =  'SELECT * FROM rushees WHERE att_11 = \'y\' OR att_12 = \'y\' OR att_13 = \'y\'';
+                    ${'2_sql_attend'} =  'SELECT * FROM rushees WHERE att_21 = \'y\' OR att_22 = \'y\' OR att_23 = \'y\'';
+                    ${'3_sql_attend'} =  'SELECT * FROM rushees WHERE att_31 = \'y\' OR att_32 = \'y\' OR att_33 = \'y\'';
+                    ${'4_sql_attend'} =  'SELECT * FROM rushees WHERE att_40 = \'y\'';
+                    ${'5_sql_attend'} =  'SELECT * FROM rushees WHERE att_51 = \'y\' OR att_52 = \'y\'';   
+
+                    //Get current event information
+                    $presql2 = 'SELECT * FROM events WHERE event_key='.$eventonrecord;
+                    $prerun2 = mysql_query($presql2);
+                    $eventinfo = mysql_fetch_assoc($prerun2);
+
+                
 					?>
+    
+
     
 	<body>
 		<div class="header">
@@ -57,18 +112,69 @@
 				<div class="main">
 					<h1>Home</h1>
 					<hr>
-
-					<h3>Round Statistics</h3>
+					<h3><?php echo $round_name_current; ?> Statistics</h3>
                     <ul>
-                        <li>Date: </li>
-                        <li>Round: </li>
-                        <li>Invites Given: </li>
-                        <li>Event 1 Attendees (<code>Event Name</code>): </li>
-                        <li>Event 2 Attendees (<code>Event Name</code>): </li>
-                        <li>Event 3 Attendees (<code>Event Name</code>): </li>
-                        <li>Overall Round Attendance (Unique): </li>
+                        <li><b>Current Event:</b> <?php echo $eventinfo['name'];?></li>
+                        <li><b>Event Date:</b> <?php echo $eventinfo['date'];?></li>
                     </ul>
     
+                    
+                <table border="1" width="100%">
+                   <tr bgcolor="grey">
+                    <td width="25%"><b>Round</b></td>
+                    <td width="25%"><b>Total Invited</b></td>
+                    <td width="25%"><b>Unique Attendees</b></td>
+                    <td width="25%"><b>Retention</b></td>
+                   </tr>
+                     <?php
+                        $rounds = array(5,1,2,3,4);
+                        foreach($rounds as $round) {
+                            
+                            echo '<tr>';
+                            
+                            if($round == 5){
+                                echo '<td><b>Open House</b></td>';
+                            }
+                            
+                            else if($round == 4){
+                                echo '<td><b>Final Hours</b></td>';
+                            }
+                            
+                            else{
+                                echo '<td><b>Round '.$round.'</b></td>';
+                            }
+                            
+                            //Calculate Invites Given
+                            $sqlinvites = 'SELECT * FROM rushees WHERE i_'.$round.'=\'y\'';
+                            if($round == 4){
+                                $sqlinvites = 'SELECT * FROM rushees WHERE i_bid=\'y\'';
+                            }
+                            $runinvites = mysql_query($sqlinvites);
+                            ${$round.'_invites'} = mysql_num_rows($runinvites);
+                            if($round == 5){
+                                $sqloh = 'SELECT * FROM rushees';
+                                $runoh = mysql_query($sqloh);
+                                ${$round.'_invites'} = mysql_num_rows($runoh);
+                            }
+                            echo '<td>'.${$round.'_invites'}.'</td>';
+                            
+                            
+                            //Calculate Attendees
+                            $sqlattendees = mysql_query(${$round.'_sql_attend'});
+                            ${$round.'_attendees'} = mysql_num_rows($sqlattendees);
+                            echo '<td>'.${$round.'_attendees'}.'</td>';
+
+                            //Calculate Retention
+                            echo '<td>'.round(${$round.'_attendees'}/${$round.'_invites'} * 100).'%</td>';
+                            //$percent = round((float)$str * 100 ) . '%';
+                            echo '</tr>';
+
+                        }
+                        
+                        ?>
+                    </tr>
+                </table>
+                    
 				</div>
 			</div>
 		</div>
